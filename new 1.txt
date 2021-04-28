@@ -1,0 +1,91 @@
+a.
+ALTER TABLE PLAYERGAME 
+ADD CONSTRAINT PlayerGame_pk PRIMARY KEY (PlayerID,GameID);
+
+ALTER TABLE PLAYERGAME 
+ADD CONSTRAINT PlayerGame_GameID_fk 
+FOREIGN KEY (GameID) REFERENCES Game(GameID);
+
+ALTER TABLE PLAYERGAME 
+ADD CONSTRAINT PlayerGame_PlayerID_fk 
+FOREIGN KEY (PlayerID) REFERENCES Player(PlayerID);
+
+b.
+ALTER TABLE PlayerGame
+MODIFY Comment VARCHAR2(100);
+
+c.
+ALTER TABLE PlayerGame
+ADD CONSTRAINT PlayerGame_Status_cc 
+CHECK 
+(Status = "Playing" OR Status = "Win" OR Status = "Game Over")
+
+d.
+CREATE INDEX Score_idx
+ON PlayerGame(Score);
+
+e.
+ALTER TABLE PlayerGame
+MODIFY StartDate DEFAULT SYSDATE
+
+2a.
+SELECT GameID,Name
+FROM GAME
+WHERE Rating > 5;
+
+2b.
+SELECT *
+FROM PLAYER
+WHERE Email Like '%.com'
+
+2c.
+SELECT *
+FROM PLAYERGAME
+WHERE Score IS NULL AND Comment = ''
+
+2d.
+SELECT PlayerID, Status, Score
+FROM PLAYERGAME
+WHERE StartDate < '2019-1-1'
+
+2e.
+SELECT COUNT(PlayerID), GameID
+From PLAYERGAME
+GROUP BY GameID
+
+2f.
+INSERT INTO PLAYERGAME 
+VALUES ('P104','G02',SYSDATE,'Playing',NULL,NULL)
+
+2g.
+UPDATE PLAYER
+SET Password = 'itp4903pass'
+WHERE PlayerID = 'P101'
+
+2h.
+DELETE FROM PLAYERGAME
+WHERE GameID = 'G04' AND StartDate < '2019-1-1'
+
+4a i.
+data that describes the data
+
+4a ii.
+data item name, data type, minimum, maximum
+
+4b i.
+An attribute, or set of attributes, that uniquely identifies
+a tuple within a relation.
+MemberID,Name+Address,ContactPhone
+
+4b ii.
+An attribute or a minimal set of attributes that uniquely 
+identifies a tuple within a relation
+MemberID,ContactPhone
+
+4c
+If foreign key exists in a relation, either foreign key 
+value must match a candidate key value of some tuple in its 
+home relation or foreign key value must be wholly null.
+LOAN.BookID refer to BOOK.BookID
+LOAN.MemberID refer to Member.MemberID
+

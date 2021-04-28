@@ -1,0 +1,39 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="form.css">
+		<title>Form Page</title>
+	</head>
+	<body>
+		<form onsubmit="return send(event)" action="test.php" method="post">
+			<pre>Account</pre><input type="text" minlength="4" required/>
+			<pre>Password</pre><input id="pass" type="password" minlength="6" required/>
+			<pre>Re-Password</pre><input id="repass" type="password" minlength="6" required/>
+			<pre>Email</pre><input type="email" required/>
+			<br><br><input " type="submit" />
+			<input id="resetButton" type="reset" />		
+			
+		</form>
+	</body>
+	
+	<script type="text/javascript">
+		function send(e){
+			var pass = document.getElementById("pass");
+			var repass = document.getElementById("repass");
+			if(pass.value != repass.value)
+			{
+				alert("Password are not same !");
+				pass.value = "";
+				repass.value = "";
+				e.preventDefault();	 //stop event submit 
+				return false;
+			}
+			else
+			{
+				alert("Sucess!");
+				return true;
+			}
+			
+			
+		}
+	</script>
+</html>

@@ -1,0 +1,309 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="main.css">
+		<title>Game Page</title>
+		
+	</head>
+	<body onload="rankSet()" onkeydown="onKeyPress(event)" onkeyup="onKeyUp(event)">	
+		<div id="top">
+			<label id="scoreLabel">Score<br>Level</label>
+			<a 	id="twitter"
+				href="https://twitter.com/intent/tweet?text=I%20am%20Testing%20my%20Reaction.%20My%20Highest%20Score%20is%200%20!">
+				<img src="twIcon.png" width="30" height="30"></a>
+
+		</div>
+		
+		<div id="main">
+			<rank>
+				<h4>SCORE RANK</h4>
+				<ol id="rankList">
+				</ol>
+			</rank>
+			<game>
+				<canvas id="gameCanva" width="420" height="420"> </canvas>	
+				<button id="startButton" type="button" onclick="startGame()">Start Game</button>
+			</game>
+			<book>
+				<pre id="p1">Move<br>&emsp;Up:	W<br>&emsp;Down:	S<br>&emsp;Left:	A<br>&emsp;Right:	D</pre>
+				<p id="p2">Keep dodge the circle to get highest score !</p>
+			</book>	
+		</div>	
+		
+	<script type="text/javascript">
+	
+	var mine;
+	var isStart = false;
+	
+	var enemys = new Array();
+	
+	var score = 0;
+	
+	var diffcult = 1.0;
+	
+	var rank = [];
+	
+	
+	var gameArea = {
+		canvas : document.getElementById("gameCanva"),
+		scoreLabel : document.getElementById("scoreLabel"),
+		rankList : document.getElementById("rankList"),
+		start : function() {			
+			this.context = this.canvas.getContext("2d");
+			this.interval = setInterval(updateGame,20);
+			isStart = true;
+			this.canvas.style.background = "white"
+			score = 0;
+			diffcult = 1.0;
+		},
+		clear : function() {
+			this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
+		},
+		lose : function() {
+			isStart = false;
+			clearInterval(this.interval);
+			enemys = [];
+			this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
+			this.canvas.style.background = "grey"
+			rankSet();
+		}
+		
+	}
+	
+	function rankSet()
+	{	
+		if(rank.length == 0 && score > 0)
+		{	
+			rank.push(score)
+		}	
+		else if(score > 0)
+		{	
+			var range = Math.min(10,rank.length);
+			for(var i=0;i<range;i++)
+			{
+				if(score >= rank[i])
+				{
+					rank.splice(i,0,score);
+					break;
+				}
+				else if(i == range-1 && range < 10)
+				{
+					rank.push(score)
+				}
+			}
+		}
+		
+		
+		while(rankList.firstChild)
+		{
+			rankList.removeChild(rankList.firstChild)
+		}
+		
+		for(var i=0;i<10;i++)
+		{
+			var li = document.createElement("li");
+			var s = "";
+			
+			if(i < rank.length)
+			{
+				var rs = rank[i] + "";
+				s = "_".repeat(9-rs.length)+rs;
+			}
+			else
+			{
+				s = "_".repeat(9);
+			}
+			var item = li.appendChild(document.createTextNode(s));
+	
+			rankList.appendChild(li)
+		}
+		
+		if(rank.length > 0)
+		{	
+			var tb = document.getElementById("twitter");
+			tb.href = href="https://twitter.com/intent/tweet?text=I%20am%20Testing%20my%20Reaction.%20My%20Highest%20Score%20is%20" + rank[0] + "%20!";
+			
+		}
+	}
+	
+	function startGame()
+	{
+		if(!isStart)
+		{
+			gameArea.start();			
+			mine = new circle(210,210,8,"grey",2);
+		}
+
+	}
+	
+	function circle(x,y,r,color,spM)
+	{
+		this.speedX = 0;
+		this.speedY = 0;
+		this.x = x;
+		this.y = y;
+		this.r = r;
+		this.speedM = spM;
+		
+		this.update = function(){
+			ctx = gameArea.context;
+		    ctx.fillStyle = color;
+			this.move();
+			ctx.beginPath();
+			ctx.arc(this.x,this.y,this.r,0,2 * Math.PI);
+			ctx.fill();    
+		}
+		
+		this.move = function(){
+			this.x += this.speedX * this.speedM;
+			this.y += this.speedY * this.speedM;
+		}	
+	}
+	
+	function collusion()
+	{
+		var nArray = new Array();	
+		
+		if(mine.x < -10 || mine.x > 430 || mine.y < -10 || mine.y > 430)
+		{
+			gameArea.lose();
+		}
+		
+		for(var i=0;i<enemys.length;i++)
+		{
+			if(enemys[i].x < 500 && enemys[i].y < 500 && enemys[i].x > -80 && enemys[i].y > -80)
+			{
+				nArray.push(enemys[i]);
+			}
+		}
+		
+		enemys = nArray;
+		
+		for(var i=0; i<enemys.length;i++)
+		{	
+			var x = mine.x - enemys[i].x
+			var y =	mine.y - enemys[i].y
+			if(Math.sqrt(x*x + y*y) < mine.r + enemys[i].r - 2)
+			{
+				gameArea.lose();
+			}
+			
+		}
+	}
+	
+	var colorA = ["red","green","blue","brown","orange","pink"]
+	
+	function enemyCreate()
+	{
+		var ran = Math.floor(Math.random()*100); <!-- 0-99 -->
+		if(ran < diffcult)
+		{
+			var ran_xy = Math.floor(Math.random()*420);
+			var ran_start = Math.floor(Math.random()*4);
+			
+			var ran_r = Math.floor(Math.random()*15)+10;
+			
+			var sLoc = [ [-30,ran_xy], [ran_xy,-30], [450,ran_xy], [ran_xy,450] ];
+			var rMove = [ [1,0], [0,1], [-1,0], [0,-1] ];
+			
+			var rMove_x = Math.floor(Math.random()*300)+10;
+			var rMove_y = Math.floor(Math.random()*300)+10;
+			
+			var rPositive = Math.floor(Math.random()*2);
+			var pos = [1,-1];
+			var spX = 0.0;
+			var spY = 0.0;
+			
+			var ran_c = Math.floor(Math.random()*6);
+			
+			if(rMove[ran_start][0] == 0)
+			{
+				spX = (rMove_x/100) * pos[rPositive];
+				spY = (rMove_y/100) * rMove[ran_start][1];	
+			}
+			else
+			{
+				spX = (rMove_y/100) * pos[rPositive];
+				spY = (rMove_x/100) * rMove[ran_start][0];	
+			}
+			
+			var enemy = new circle(sLoc[ran_start][0],sLoc[ran_start][1],ran_r,colorA[ran_c],1);
+			enemy.speedX = spX;
+			enemy.speedY = spY; 
+			enemys.push(enemy);
+		}
+	}
+	
+	function updateGame()
+	{
+		score += 1;
+		
+		if(diffcult < 100)
+		{
+			diffcult += 0.01;
+		}		
+		scoreLabel.innerHTML = "Score : " + score + "<br>" + "Level : "+ Math.floor(diffcult);
+		
+		
+	
+		gameArea.clear();
+		enemyCreate();
+		
+		mine.update();
+		
+		enemys.forEach(e => e.update());
+		collusion();
+	}
+	
+	function onKeyPress(event)
+	{
+		if(isStart)
+		{
+			var key = event.keyCode;
+			
+			switch(key){
+				case 87: <!-- w -->
+					mine.speedY = -1;
+					break;
+				case 83: <!-- s -->
+					mine.speedY = 1;
+					break;
+				case 65: <!-- a -->
+					mine.speedX = -1;
+					break;
+				case 68: <!-- d -->
+					mine.speedX = 1;
+					break;
+			}			
+		}
+
+	}
+	
+	function onKeyUp(event)
+	{
+		if(isStart)
+		{
+			var key = event.keyCode;
+			
+			switch(key){
+				case 87: <!-- w -->
+					mine.speedY = 0;
+					break;
+				case 83: <!-- s -->
+					mine.speedY = 0;
+					break;
+				case 65: <!-- a -->
+					mine.speedX = 0;
+					break;
+				case 68: <!-- d -->
+					mine.speedX = 0;
+					break;
+			}			
+		}
+	}
+	
+	</script>
+	</body>
+	
+	
+
+</html>
